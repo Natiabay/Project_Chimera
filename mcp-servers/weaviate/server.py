@@ -149,5 +149,5 @@ async def weaviate_memories_recent() -> str:
 
 
 if __name__ == "__main__":
-    # Run with stdio (default for Cursor/IDE MCP)
-    mcp.run(transport="stdio")
+    # Run with sse for Docker networking
+    mcp.run(transport="sse", host="0.0.0.0", port=3000)
