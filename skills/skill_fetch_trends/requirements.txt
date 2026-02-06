@@ -1,0 +1,4 @@
+aiohttp>=3.9.0
+mcp>=1.0.0
+python-dotenv>=1.0.0
+weaviate-client>=4.0.0

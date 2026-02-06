@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chimera-ingress
+  namespace: chimera
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: letsencrypt-prod  # optional
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: api.chimera.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: chimera-api
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - api.chimera.example.com
+    secretName: chimera-tls

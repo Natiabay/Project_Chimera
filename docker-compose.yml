@@ -1,0 +1,124 @@
+version: "3.8"
+
+services:
+  # Weaviate Vector Database
+  weaviate:
+    image: semitechnologies/weaviate:1.24.0
+    ports:
+      - "8080:8080"
+    environment:
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      PERSISTENCE_DATA_PATH: "/var/lib/weaviate"
+      ENABLE_MODULES: "text2vec-openai,generative-openai"
+      OPENAI_APIKEY: ${OPENAI_API_KEY}
+      CLUSTER_HOSTNAME: "node1"
+    volumes:
+      - weaviate_data:/var/lib/weaviate
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/v1/.well-known/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # PostgreSQL for transactional data
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: chimera
+      POSTGRES_USER: chimera
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chimera123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chimera"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for caching and queues
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MCP Weaviate Server (connects to weaviate container above)
+  mcp-weaviate:
+    build: ./mcp-servers/weaviate
+    ports:
+      - "3001:3000"
+    environment:
+      WEAVIATE_URL: http://weaviate:8080  # Weaviate container on same network
+      WEAVIATE_API_KEY: ${WEAVIATE_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    depends_on:
+      weaviate:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Main Application
+  chimera-api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      WEAVIATE_URL: http://weaviate:8080
+      POSTGRES_URL: postgresql://chimera:${POSTGRES_PASSWORD:-chimera123}@postgres:5432/chimera
+      REDIS_URL: redis://redis:6379/0
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      NEWSDATA_API_KEY: ${NEWSDATA_API_KEY:-}
+      MCP_WEAVIATE_URL: http://mcp-weaviate:3000
+      ENVIRONMENT: production
+      LOG_LEVEL: INFO
+    depends_on:
+      weaviate:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mcp-weaviate:
+        condition: service_started
+    volumes:
+      - ./skills:/app/skills
+      - ./specs:/app/specs
+      - ./models:/app/models
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Monitoring (optional)
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+
+volumes:
+  weaviate_data:
+  postgres_data:
+  redis_data:
+  grafana_data:
+
+networks:
+  default:
+    name: chimera-network

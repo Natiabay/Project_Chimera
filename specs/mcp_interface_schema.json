@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MCP Runtime Interface Contract (Project Chimera)",
+  "description": "All Runtime MCP Servers (weaviate, news, coinbase, twitter) MUST expose tools and resources conforming to this contract. Dev MCPs are separate (see research/tooling_strategy.md).",
+  "type": "object",
+  "properties": {
+    "tools": {
+      "type": "array",
+      "description": "List of tools this server provides",
+      "items": {
+        "type": "object",
+        "required": ["name", "description", "inputSchema"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "type": { "enum": ["object"] },
+              "properties": { "type": "object" },
+              "required": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "resources": {
+      "type": "array",
+      "description": "Resource URI patterns (e.g. news://[niche]/latest)",
+      "items": { "type": "string", "pattern": "^[a-z]+://" }
+    }
+  },
+  "required": ["tools"]
+}

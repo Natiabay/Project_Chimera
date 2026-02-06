@@ -1,0 +1,39 @@
+---
+alwaysApply: true
+---
+
+# PROJECT CHIMERA RULES
+
+## Context
+This is Project Chimera: Autonomous Influencer Network using:
+1. Model Context Protocol (MCP) for ALL external calls
+2. FastRender Swarm (Planner-Worker-Judge pattern)
+3. Coinbase AgentKit for Agentic Commerce
+4. Weaviate + Redis + PostgreSQL for data
+
+## Prime Directives
+1. ALWAYS check specs/ before writing ANY code
+2. NO direct API calls - ONLY MCP Tools/Resources
+3. Follow Planner→Worker→Judge workflow strictly
+4. Financial transactions MUST pass CFO Judge
+5. Write failing tests first (TDD approach)
+
+## Code Standards
+- Use Pydantic v2 for ALL data models
+- Async/await for ALL I/O operations
+- Type hints REQUIRED for all functions
+- MCP calls wrapped in try/except with retry logic
+- All secrets via environment variables (never hardcoded)
+
+## Traceability Requirement
+When implementing any feature:
+1. Reference the SRS Functional Requirement (FR X.X)
+2. Reference the spec file and section
+3. Explain your plan BEFORE writing code
+4. Update specs/ if requirements evolve
+
+## MCP Rules
+- **Tools**: Executable functions (generate_image, send_transaction)
+- **Resources**: Data sources (news://, twitter://)
+- **Prompts**: Reusable templates (analyze_sentiment)
+- All external connectivity via MCP Servers

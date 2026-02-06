@@ -1,0 +1,21 @@
+name: Deploy
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - "k8s/**"
+      - "Dockerfile"
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t project-chimera:${{ github.sha }} .
+      - name: Deploy (placeholder)
+        run: |
+          echo "Deploy to your k8s cluster (e.g. kubectl apply -k k8s/)"
+          echo "Image: project-chimera:${{ github.sha }}"

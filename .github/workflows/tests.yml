@@ -1,0 +1,22 @@
+name: Tests
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - run: pip install uv
+      - run: uv sync
+      - name: Unit tests
+        run: uv run python -m pytest tests/unit/ -v
+      - name: Integration tests
+        run: uv run python -m pytest tests/integration/ -v
+      - name: E2E tests (optional, may be slow)
+        run: uv run python -m pytest tests/e2e/ -v --timeout=60 || true

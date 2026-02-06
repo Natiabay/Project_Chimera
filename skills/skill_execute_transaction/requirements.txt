@@ -1,0 +1,4 @@
+# Skill: Transaction execution (FR 5.x, Coinbase AgentKit)
+coinbase-agentkit>=0.5.0
+web3>=6.0.0
+eth-account>=0.10.0

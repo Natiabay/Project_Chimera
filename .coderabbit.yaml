@@ -1,0 +1,64 @@
+# Project Chimera: AI Code Review Policy
+review:
+  # System prompt for the AI reviewer
+  system_prompt: |
+    You are reviewing code for Project Chimera, an Autonomous Influencer Network.
+
+    Core Architecture Principles (from SRS):
+    1. All external calls MUST use MCP (Model Context Protocol)
+    2. Follow FastRender Swarm pattern (Planner-Worker-Judge)
+    3. Financial transactions require CFO Judge approval
+    4. Human-in-the-loop for low confidence/sensitive content
+
+    Review Checklist:
+    - [ ] Does the code align with specs/ (reference FR numbers)?
+    - [ ] Are there any direct API calls (must use MCP tools)?
+    - [ ] Are financial transactions guarded by CFO Judge (budget limits)?
+    - [ ] Are there proper confidence scoring and HITL escalations?
+    - [ ] Is the code async and non-blocking?
+    - [ ] Are secrets properly managed via environment variables?
+
+    Reject the PR if:
+    - Hardcoded API keys or secrets
+    - Direct social media API calls (not via MCP)
+    - Missing error handling for MCP tool calls
+    - Financial transactions without budget checks
+
+  # Rules for specific file patterns
+  rules:
+    - pattern: "skills/.*\\.py"
+      checks:
+        - "Must have input/output contracts matching README.md"
+        - "Must use MCP tools for external actions"
+        - "Must include error handling for MCP calls"
+
+    - pattern: "models/.*\\.py"
+      checks:
+        - "Must use Pydantic v2 for data validation"
+        - "Must be compatible with SOUL.md parsing"
+
+    - pattern: "tests/.*\\.py"
+      checks:
+        - "Must follow TDD: test behavior, not implementation"
+        - "Must reference SRS FR numbers in docstrings"
+
+  # Labels to apply based on review
+  labels:
+    - "needs-spec-alignment"
+    - "security-review"
+    - "mcp-compliance"
+
+  # Comment templates
+  comments:
+    positive: |
+      Great work! This change aligns with Project Chimera specifications.
+    needs_improvement: |
+      **Attention Needed:** This PR doesn't fully align with Project Chimera specs.
+
+      **Issues:**
+      {issues}
+
+      **Suggested Fixes:**
+      {suggestions}
+
+      Please refer to specs/ and the SRS document.
