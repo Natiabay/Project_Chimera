@@ -14,10 +14,7 @@ import weaviate
 from weaviate.classes.init import Auth
 
 # MCP server instance
-mcp = FastMCP(
-    "weaviate-server",
-    description="Weaviate vector database for agent memories (Project Chimera)",
-)
+mcp = FastMCP("weaviate-server")
 
 # Collection name for agent memories (SRS FR 1.1)
 AGENT_MEMORY_COLLECTION = "AgentMemory"
